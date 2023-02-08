@@ -49,6 +49,7 @@ int main(void)
         glfwSwapBuffers(window);
     }
 
+
     // ѕосле завершени€ цикла, закрывавем окно
     glfwTerminate();
 
