@@ -86,9 +86,12 @@ int main(void)
     const GLchar* vertex_shader_src =
         "#version 460 core\n"
         "layout (location = 0) in vec3 position;\n"
+        "layout (location = 1) in vec3 color;\n"
+        "out vec3 vertex_color;\n"
         "void main()\n"
         "{\n"
-        "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
+        "gl_Position = vec4(position, 1.0f);\n"
+        "vertex_color = color;\n"
         "}\0";
 
     GLuint vertex_shader;
@@ -100,10 +103,11 @@ int main(void)
 
     const GLchar* fragment_shader_src =
         "#version 460 core\n"
+        "in vec3 vertex_color;\n"
         "out vec4 color;\n"
         "void main()\n"
         "{\n"
-        "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "color = vec4(vertex_color, 1.0f);\n"
         "}\0";
 
     GLuint fragment_shader;
@@ -127,15 +131,10 @@ int main(void)
 
 
     GLfloat vertices[] = {
-        0.5f,  0.5f, 0.0f,      // Правый верх  0
-        0.5f, -0.5f, 0.0f,      // Правый низ   1
-        -0.5f, -0.5f, 0.0f,     // Левый низ    2
-        -0.5f,  0.5f, 0.0f      // Левый верх   3
-    };
-
-    GLuint indices[] = {
-        0, 1, 3,
-        1, 2, 3
+        // Позиция              // Цвет
+        -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f,
+        0.5f, -0.5f, 0.0f,      0.1f, 0.0f, 1.0f
     };
 
 
@@ -151,16 +150,15 @@ int main(void)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // III
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // Так как теперь у нас помимо позиции появился цвет, указать нужно и его
+    // Сначала укажем позицию, увеличив шаг
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    // Теперь по аналогии укажем на цвет
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
     // IV
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-
-    // V
     glBindVertexArray(0);
 
 
@@ -177,15 +175,30 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Bызываем программу
         glUseProgram(shader_program);
+
+        //// Получаем время работы в секундах
+        //GLfloat time_value = glfwGetTime();
+        //// Задаем изменение значения зеленого канала с помощью периодической функции от 0 до 1
+        //GLfloat green_value = (sin(time_value) / 2) + 0.5;
+        //// Ищем нашу uniform переменную под именем our_color в shader_program
+        //GLint vertex_color_location = glGetUniformLocation(shader_program, "our_color");
+        //// Только после вызова программы можем обновить значение в uniform переменной
+        //// (хотя все функции выше можно использовать и до вызова shader_program)
+        //glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
+
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
 
         glfwSwapBuffers(window);
     }
 
+    // Очищаем выделенную под эти объекты память
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     // После завершения цикла, закрывавем окно
     glfwTerminate();
 
