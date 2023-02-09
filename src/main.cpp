@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-// Функция "обратного вызова", которая отслеживает нажатие ESC и закрывает окно
+// Р¤СѓРЅРєС†РёСЏ "РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°", РєРѕС‚РѕСЂР°СЏ РѕС‚СЃР»РµР¶РёРІР°РµС‚ РЅР°Р¶Р°С‚РёРµ ESC Рё Р·Р°РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -12,14 +12,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-// Проверяем на ошибки компиляции шейдера
+// РџСЂРѕРІРµСЂСЏРµРј РЅР° РѕС€РёР±РєРё РєРѕРјРїРёР»СЏС†РёРё С€РµР№РґРµСЂР°
 void check_shader_compilation(GLuint shader)
 {
-    // Число, которое определяет успешность сборки (флаг короче)
+    // Р§РёСЃР»Рѕ, РєРѕС‚РѕСЂРѕРµ РѕРїСЂРµРґРµР»СЏРµС‚ СѓСЃРїРµС€РЅРѕСЃС‚СЊ СЃР±РѕСЂРєРё (С„Р»Р°Рі РєРѕСЂРѕС‡Рµ)
     GLint success;
-    // Контейнер для хранения сообщения об ошибке
+    // РљРѕРЅС‚РµР№РЅРµСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СЃРѕРѕР±С‰РµРЅРёСЏ РѕР± РѕС€РёР±РєРµ
     GLchar info_log[512];
-    // Собственно функция для проверки, потом ловим ошибки
+    // РЎРѕР±СЃС‚РІРµРЅРЅРѕ С„СѓРЅРєС†РёСЏ РґР»СЏ РїСЂРѕРІРµСЂРєРё, РїРѕС‚РѕРј Р»РѕРІРёРј РѕС€РёР±РєРё
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
@@ -28,13 +28,13 @@ void check_shader_compilation(GLuint shader)
     }
 }
 
-// Проверем на ошибки линковки программу
+// РџСЂРѕРІРµСЂРµРј РЅР° РѕС€РёР±РєРё Р»РёРЅРєРѕРІРєРё РїСЂРѕРіСЂР°РјРјСѓ
 void check_program_linking(GLuint program)
 {
-    // Аналогично проверке на компиляцию шейдера
+    // РђРЅР°Р»РѕРіРёС‡РЅРѕ РїСЂРѕРІРµСЂРєРµ РЅР° РєРѕРјРїРёР»СЏС†РёСЋ С€РµР№РґРµСЂР°
     GLint success;
     GLchar info_log[512];
-    // Функция проверки, потом ловим ошибки
+    // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё, РїРѕС‚РѕРј Р»РѕРІРёРј РѕС€РёР±РєРё
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success)
     {
@@ -45,18 +45,18 @@ void check_program_linking(GLuint program)
 
 int main(void)
 {
-    // Инициализация и настройка GLFW
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Рё РЅР°СЃС‚СЂРѕР№РєР° GLFW
     glfwInit();
-    // Минимальная необходимая версия OpenGL (мажорная и минорная)
+    // РњРёРЅРёРјР°Р»СЊРЅР°СЏ РЅРµРѕР±С…РѕРґРёРјР°СЏ РІРµСЂСЃРёСЏ OpenGL (РјР°Р¶РѕСЂРЅР°СЏ Рё РјРёРЅРѕСЂРЅР°СЏ)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    // "Установка профайла, для которого создается контекст"
+    // "РЈСЃС‚Р°РЅРѕРІРєР° РїСЂРѕС„Р°Р№Р»Р°, РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ СЃРѕР·РґР°РµС‚СЃСЏ РєРѕРЅС‚РµРєСЃС‚"
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    // Запрет на динамическое изменение окна
+    // Р—Р°РїСЂРµС‚ РЅР° РґРёРЅР°РјРёС‡РµСЃРєРѕРµ РёР·РјРµРЅРµРЅРёРµ РѕРєРЅР°
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 
-    // Создаем объект окна
+    // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РѕРєРЅР°
     GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", nullptr, nullptr);
     if (window == nullptr)
     {
@@ -64,13 +64,13 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-    // Задаем window рабочим окном
+    // Р—Р°РґР°РµРј window СЂР°Р±РѕС‡РёРј РѕРєРЅРѕРј
     glfwMakeContextCurrent(window);
-    // Передаем нашу рукописную callback-функцию в GLFW функцию проверки таких callback функций
+    // РџРµСЂРµРґР°РµРј РЅР°С€Сѓ СЂСѓРєРѕРїРёСЃРЅСѓСЋ callback-С„СѓРЅРєС†РёСЋ РІ GLFW С„СѓРЅРєС†РёСЋ РїСЂРѕРІРµСЂРєРё С‚Р°РєРёС… callback С„СѓРЅРєС†РёР№
     glfwSetKeyCallback(window, key_callback);
 
 
-    // Загружаем библиотеку GLAD (OpenGL)
+    // Р—Р°РіСЂСѓР¶Р°РµРј Р±РёР±Р»РёРѕС‚РµРєСѓ GLAD (OpenGL)
     if (!gladLoadGL())
     {
         std::cout << "Can't load GLAD" << std::endl;
@@ -78,13 +78,13 @@ int main(void)
     }
 
 
-    // Передаем OpenGL размер window
+    // РџРµСЂРµРґР°РµРј OpenGL СЂР°Р·РјРµСЂ window
     int width, heigth;
     glfwGetFramebufferSize(window, &width, &heigth);
     glViewport(0, 0, width, heigth);
 
 
-    // Задаем вершины треугольника (координаты в трехмерном пространстве)
+    // Р—Р°РґР°РµРј РІРµСЂС€РёРЅС‹ С‚СЂРµСѓРіРѕР»СЊРЅРёРєР° (РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ С‚СЂРµС…РјРµСЂРЅРѕРј РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ)
     GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
@@ -92,7 +92,7 @@ int main(void)
     };
 
 
-    // Исходный код вершинного шейдера (строка)
+    // РСЃС…РѕРґРЅС‹Р№ РєРѕРґ РІРµСЂС€РёРЅРЅРѕРіРѕ С€РµР№РґРµСЂР° (СЃС‚СЂРѕРєР°)
     const GLchar* vertex_shader_src =
         "#version 460 core\n"
         "layout (location = 0) in vec3 position;\n"
@@ -100,17 +100,17 @@ int main(void)
         "{\n"
         "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
         "}\0";
-    // Создаем объект вершинного шейдера
+    // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РІРµСЂС€РёРЅРЅРѕРіРѕ С€РµР№РґРµСЂР°
     GLuint vertex_shader;
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    // Привязываем исходник шейдера к объекту шейдера
+    // РџСЂРёРІСЏР·С‹РІР°РµРј РёСЃС…РѕРґРЅРёРє С€РµР№РґРµСЂР° Рє РѕР±СЉРµРєС‚Сѓ С€РµР№РґРµСЂР°
     glShaderSource(vertex_shader, 1, &vertex_shader_src, NULL);
-    // Компилируем шейдер
+    // РљРѕРјРїРёР»РёСЂСѓРµРј С€РµР№РґРµСЂ
     glCompileShader(vertex_shader);
     check_shader_compilation(vertex_shader);
 
 
-    // Исходный код фрагментного шейдера (строка)
+    // РСЃС…РѕРґРЅС‹Р№ РєРѕРґ С„СЂР°РіРјРµРЅС‚РЅРѕРіРѕ С€РµР№РґРµСЂР° (СЃС‚СЂРѕРєР°)
     const GLchar* fragment_shader_src =
         "#version 460 core\n"
         "out vec4 color;\n"
@@ -118,7 +118,7 @@ int main(void)
         "{\n"
         "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
         "}\0";
-    // Сборка и компиляция идентична вершинному шейдеру, отличается только тип (GL_FRAGMENT_SHADER)
+    // РЎР±РѕСЂРєР° Рё РєРѕРјРїРёР»СЏС†РёСЏ РёРґРµРЅС‚РёС‡РЅР° РІРµСЂС€РёРЅРЅРѕРјСѓ С€РµР№РґРµСЂСѓ, РѕС‚Р»РёС‡Р°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ С‚РёРї (GL_FRAGMENT_SHADER)
     GLuint fragment_shader;
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragment_shader_src, NULL);
@@ -126,78 +126,78 @@ int main(void)
     check_shader_compilation(fragment_shader);
 
 
-    // Создаем шейдерную программу (связываем написанные шейдеры воедино)
+    // РЎРѕР·РґР°РµРј С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ (СЃРІСЏР·С‹РІР°РµРј РЅР°РїРёСЃР°РЅРЅС‹Рµ С€РµР№РґРµСЂС‹ РІРѕРµРґРёРЅРѕ)
     GLuint shader_program;
     shader_program = glCreateProgram();
-    // Присоединяем шейдеры к программе
+    // РџСЂРёСЃРѕРµРґРёРЅСЏРµРј С€РµР№РґРµСЂС‹ Рє РїСЂРѕРіСЂР°РјРјРµ
     glAttachShader(shader_program, vertex_shader);
     glAttachShader(shader_program, fragment_shader);
-    // Линкуем это дело
+    // Р›РёРЅРєСѓРµРј СЌС‚Рѕ РґРµР»Рѕ
     glLinkProgram(shader_program);
     check_program_linking(shader_program);
     
 
-    // После линковки, шейдеры нужно удалить
+    // РџРѕСЃР»Рµ Р»РёРЅРєРѕРІРєРё, С€РµР№РґРµСЂС‹ РЅСѓР¶РЅРѕ СѓРґР°Р»РёС‚СЊ
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
 
     // I
-    // Создаем VAO (Vertex Array Object)
+    // РЎРѕР·РґР°РµРј VAO (Vertex Array Object)
     GLuint VAO;
-    // Генерируем массив
+    // Р“РµРЅРµСЂРёСЂСѓРµРј РјР°СЃСЃРёРІ
     glGenVertexArrays(1, &VAO);
-    // Привязываем VAO
+    // РџСЂРёРІСЏР·С‹РІР°РµРј VAO
     glBindVertexArray(VAO);
 
     // II
-    // Создаем VBO (Vertex Buffer Object)
+    // РЎРѕР·РґР°РµРј VBO (Vertex Buffer Object)
     GLuint VBO;
-    // Генерируем буфер
+    // Р“РµРЅРµСЂРёСЂСѓРµРј Р±СѓС„РµСЂ
     glGenBuffers(1, &VBO);
-    // Привязываем к нему GL_ARRAY_BUFFER (необходимый для VBO тип буфера)
+    // РџСЂРёРІСЏР·С‹РІР°РµРј Рє РЅРµРјСѓ GL_ARRAY_BUFFER (РЅРµРѕР±С…РѕРґРёРјС‹Р№ РґР»СЏ VBO С‚РёРї Р±СѓС„РµСЂР°)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // Передаем в VBO буфер наши вершины
+    // РџРµСЂРµРґР°РµРј РІ VBO Р±СѓС„РµСЂ РЅР°С€Рё РІРµСЂС€РёРЅС‹
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // III
-    // Имея на руках вершинный буфер, указываем OpenGL на то, как его интерпретировать
+    // РРјРµСЏ РЅР° СЂСѓРєР°С… РІРµСЂС€РёРЅРЅС‹Р№ Р±СѓС„РµСЂ, СѓРєР°Р·С‹РІР°РµРј OpenGL РЅР° С‚Рѕ, РєР°Рє РµРіРѕ РёРЅС‚РµСЂРїСЂРµС‚РёСЂРѕРІР°С‚СЊ
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
-    // Включаем атрибут и передаем ему позицию аргумента
+    // Р’РєР»СЋС‡Р°РµРј Р°С‚СЂРёР±СѓС‚ Рё РїРµСЂРµРґР°РµРј РµРјСѓ РїРѕР·РёС†РёСЋ Р°СЂРіСѓРјРµРЅС‚Р°
     glEnableVertexAttribArray(0);
 
     // IV
-    // Отвязываем VAO
+    // РћС‚РІСЏР·С‹РІР°РµРј VAO
     glBindVertexArray(0);
 
 
-    // Цикл отрисовки окна, в условии функция... ну очевидно, что делает
+    // Р¦РёРєР» РѕС‚СЂРёСЃРѕРІРєРё РѕРєРЅР°, РІ СѓСЃР»РѕРІРёРё С„СѓРЅРєС†РёСЏ... РЅСѓ РѕС‡РµРІРёРґРЅРѕ, С‡С‚Рѕ РґРµР»Р°РµС‚
     while (!glfwWindowShouldClose(window))
     {
-        // Проверка на наличие всяких событий
+        // РџСЂРѕРІРµСЂРєР° РЅР° РЅР°Р»РёС‡РёРµ РІСЃСЏРєРёС… СЃРѕР±С‹С‚РёР№
         glfwPollEvents();
 
 
-        // Устанавливаем цвет, которым будем зачищать окно
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С†РІРµС‚, РєРѕС‚РѕСЂС‹Рј Р±СѓРґРµРј Р·Р°С‡РёС‰Р°С‚СЊ РѕРєРЅРѕ
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        // Зачищаем окно
+        // Р—Р°С‡РёС‰Р°РµРј РѕРєРЅРѕ
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Вызываем шейдерную программу
+        // Р’С‹Р·С‹РІР°РµРј С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glUseProgram(shader_program);
-        // Связываем VAO
+        // РЎРІСЏР·С‹РІР°РµРј VAO
         glBindVertexArray(VAO);
-        // Отрисовываем то, что хранится в VAO
+        // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј С‚Рѕ, С‡С‚Рѕ С…СЂР°РЅРёС‚СЃСЏ РІ VAO
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        // Отвязываем VAO
+        // РћС‚РІСЏР·С‹РІР°РµРј VAO
         glBindVertexArray(0);
 
 
-        // Замена буфера с цветами для каждого пикселя в window
+        // Р—Р°РјРµРЅР° Р±СѓС„РµСЂР° СЃ С†РІРµС‚Р°РјРё РґР»СЏ РєР°Р¶РґРѕРіРѕ РїРёРєСЃРµР»СЏ РІ window
         glfwSwapBuffers(window);
     }
 
-    // После завершения цикла, закрывавем окно
+    // РџРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ С†РёРєР»Р°, Р·Р°РєСЂС‹РІР°РІРµРј РѕРєРЅРѕ
     glfwTerminate();
 
     return 0;
