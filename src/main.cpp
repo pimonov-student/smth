@@ -175,19 +175,7 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Bызываем программу
         glUseProgram(shader_program);
-
-        //// Получаем время работы в секундах
-        //GLfloat time_value = glfwGetTime();
-        //// Задаем изменение значения зеленого канала с помощью периодической функции от 0 до 1
-        //GLfloat green_value = (sin(time_value) / 2) + 0.5;
-        //// Ищем нашу uniform переменную под именем our_color в shader_program
-        //GLint vertex_color_location = glGetUniformLocation(shader_program, "our_color");
-        //// Только после вызова программы можем обновить значение в uniform переменной
-        //// (хотя все функции выше можно использовать и до вызова shader_program)
-        //glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
-
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
