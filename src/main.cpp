@@ -84,14 +84,6 @@ int main(void)
     glViewport(0, 0, width, heigth);
 
 
-    // Задаем вершины треугольника (координаты в трехмерном пространстве)
-    GLfloat vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
-    };
-
-
     // Исходный код вершинного шейдера (строка)
     const GLchar* vertex_shader_src =
         "#version 460 core\n"
@@ -142,6 +134,22 @@ int main(void)
     glDeleteShader(fragment_shader);
 
 
+    // Задаем вершины четырехугольника (координаты в трехмерном пространстве)
+    // Отрисовывть будем как два треугольника с двумя общими вершинами
+    GLfloat vertices[] = {
+        0.5f,  0.5f, 0.0f,      // Правый верх  0
+        0.5f, -0.5f, 0.0f,      // Правый низ   1
+        -0.5f, -0.5f, 0.0f,     // Левый низ    2
+        -0.5f,  0.5f, 0.0f      // Левый верх   3
+    };
+
+    // Теперь задаем порядок отрисовки с помощью индексов
+    GLuint indices[] = {
+        0, 1, 3,
+        1, 2, 3
+    };
+
+
     // I
     // Создаем VAO (Vertex Array Object)
     GLuint VAO;
@@ -161,14 +169,28 @@ int main(void)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // III
+    // Создаем EBO/IBO (Element/Index Buffer Object)
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    // Привязываем к нему GL_ELEMENT_ARRAY_BUFFER (необходимый для EBO тип буфера)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // Передаем в EBO индексы (то есть порядок отрисовки элементов)
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // IV
     // Имея на руках вершинный буфер, указываем OpenGL на то, как его интерпретировать
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
     // Включаем атрибут и передаем ему позицию аргумента
     glEnableVertexAttribArray(0);
 
-    // IV
+    // V
     // Отвязываем VAO
     glBindVertexArray(0);
+
+
+    // Эта функция устанавливает режим отрисовки
+    // Второй аргумент, например: GL_LINE - только линии, GL_FILL - заливка
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
     // Цикл отрисовки окна, в условии функция... ну очевидно, что делает
@@ -188,7 +210,7 @@ int main(void)
         // Связываем VAO
         glBindVertexArray(VAO);
         // Отрисовываем то, что хранится в VAO
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // Отвязываем VAO
         glBindVertexArray(0);
 
