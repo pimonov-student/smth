@@ -171,7 +171,6 @@ int main(void)
     glBindVertexArray(0);
 
 
-
     // Цикл отрисовки окна, в условии функция... ну очевидно, что делает
     while (!glfwWindowShouldClose(window))
     {
