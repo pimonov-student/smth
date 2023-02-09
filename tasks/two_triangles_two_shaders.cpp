@@ -47,6 +47,7 @@ int main(void)
 {
     // Инициализация и настройка GLFW
     glfwInit();
+    // Минимальная необходимая версия OpenGL (мажорная и минорная)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     // "Установка профайла, для которого создается контекст"
@@ -69,7 +70,6 @@ int main(void)
     glfwSetKeyCallback(window, key_callback);
 
 
-    // Загружаем библиотеку GLAD (OpenGL)
     if (!gladLoadGL())
     {
         std::cout << "Can't load GLAD" << std::endl;
@@ -77,7 +77,6 @@ int main(void)
     }
 
 
-    // Передаем OpenGL размер window
     int width, heigth;
     glfwGetFramebufferSize(window, &width, &heigth);
     glViewport(0, 0, width, heigth);
@@ -98,69 +97,97 @@ int main(void)
     check_shader_compilation(vertex_shader);
 
 
-    const GLchar* fragment_shader_src =
+    const GLchar* fragment_shader_one_src =
         "#version 460 core\n"
         "out vec4 color;\n"
         "void main()\n"
         "{\n"
         "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
         "}\0";
+    const GLchar* fragment_shader_two_src =
+        "#version 460 core\n"
+        "out vec4 color;\n"
+        "void main()\n"
+        "{\n"
+        "color = vec4(1.0f, 0.1f, 0.6f, 1.0f);\n"
+        "}\0";
 
-    GLuint fragment_shader;
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_src, NULL);
-    glCompileShader(fragment_shader);
-    check_shader_compilation(fragment_shader);
+    GLuint fragment_shader_one, fragment_shader_two;
 
+    fragment_shader_one = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader_one, 1, &fragment_shader_one_src, NULL);
+    glCompileShader(fragment_shader_one);
+    check_shader_compilation(fragment_shader_one);
 
-    // Создаем шейдерную программу (связываем написанные шейдеры воедино)
-    GLuint shader_program;
-    shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
-    check_program_linking(shader_program);
+    fragment_shader_two = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader_two, 1, &fragment_shader_two_src, NULL);
+    glCompileShader(fragment_shader_two);
+    check_shader_compilation(fragment_shader_two);
 
+    GLuint shader_program_one, shader_program_two;
 
+    shader_program_one = glCreateProgram();
+    glAttachShader(shader_program_one, vertex_shader);
+    glAttachShader(shader_program_one, fragment_shader_one);
+    glLinkProgram(shader_program_one);
+    check_program_linking(shader_program_one);
+
+    shader_program_two = glCreateProgram();
+    glAttachShader(shader_program_two, vertex_shader);
+    glAttachShader(shader_program_two, fragment_shader_two);
+    glLinkProgram(shader_program_two);
+    check_program_linking(shader_program_two);
+    
+
+    // После линковки, шейдеры нужно удалить
     glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
+    glDeleteShader(fragment_shader_one);
+    glDeleteShader(fragment_shader_two);
 
 
-    GLfloat vertices[] = {
-        0.5f,  0.5f, 0.0f,      // Правый верх  0
-        0.5f, -0.5f, 0.0f,      // Правый низ   1
-        -0.5f, -0.5f, 0.0f,     // Левый низ    2
-        -0.5f,  0.5f, 0.0f      // Левый верх   3
+    GLfloat vertices_one[] = {
+        -0.7f, 0.7f, 0.0f,
+        -0.3f, 0.7f, 0.0f,
+        -0.5f, 0.1f, 0.0f
+    };
+    GLfloat vertices_two[] = {
+        -0.1f, -0.7f, 0.0f,
+        0.5f, 0.5f, 0.0f,
+        0.7f, -0.7f, 0.0f
     };
 
     GLuint indices[] = {
-        0, 1, 3,
-        1, 2, 3
+        0, 1, 2,
+        3, 4, 5
     };
 
 
-    // I
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    GLuint VAO[2], VBO[2];
 
-    // II
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // Треугольник первый
+    glGenVertexArrays(1, &VAO[0]);
+    glBindVertexArray(VAO[0]);
 
-    // III
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glGenBuffers(1, &VBO[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_one), vertices_one, GL_STATIC_DRAW);
 
-    // IV
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
-    // V
+    glBindVertexArray(0);
+
+    // Треугольник второй
+    glGenVertexArrays(1, &VAO[1]);
+    glBindVertexArray(VAO[1]);
+
+    glGenBuffers(1, &VBO[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_two), vertices_two, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+
     glBindVertexArray(0);
 
 
@@ -177,16 +204,20 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shader_program);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUseProgram(shader_program_one);
+        glBindVertexArray(VAO[0]);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        
+        glUseProgram(shader_program_two);
+        glBindVertexArray(VAO[1]);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
         glBindVertexArray(0);
 
 
         glfwSwapBuffers(window);
     }
 
-    // После завершения цикла, закрывавем окно
     glfwTerminate();
 
     return 0;
