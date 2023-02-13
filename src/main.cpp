@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include "render/shader.h"
 
 // Функция "обратного вызова", которая отслеживает нажатие ESC и закрывает окно
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -134,7 +135,7 @@ int main(void)
         // Позиция              // Цвет
         -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
         0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.0f,      0.1f, 0.0f, 1.0f
+        0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f
     };
 
 
