@@ -4,13 +4,13 @@
 #include <filesystem>
 #include <iostream>
 #include "render/shader.h"
-#include "texture/stb_image.h"
-
 #define STB_IMAGE_IMPLEMENTATION
+#include "texture/stb_image.h"
 
 // Пути к некоторым файлам
 GLchar* v_shader_path;
 GLchar* f_shader_path;
+GLchar* texture_path;
 
 // Функция "обратного вызова", которая отслеживает нажатие ESC и закрывает окно
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -26,15 +26,19 @@ void work_on_paths(std::string wd)
 {
     std::string v_shader = wd + "\\src\\shader\\vertex_shader.vs";
     std::string f_shader = wd + "\\src\\shader\\fragment_shader.fs";
+    std::string texture = wd + "\\src\\texture\\img\\wall.jpg";
 
     char* v_tmp = v_shader.data();
     char* f_tmp = f_shader.data();
+    char* t_tmp = texture.data();
 
     v_shader_path = new char[v_shader.length() + 1];
     f_shader_path = new char[f_shader.length() + 1];
+    texture_path = new char[texture.length() + 1];
 
     strcpy(v_shader_path, v_tmp);
     strcpy(f_shader_path, f_tmp);
+    strcpy(texture_path, t_tmp);
 }
 
 int main(void)
@@ -85,7 +89,23 @@ int main(void)
 
     // Работаем с текстурами
     // Задаем размеры изображения и количество цветовых каналов
-    int i_width, i_heigth, i_channels;
+    int i_width, i_height, i_channels;
+    // Загружаем изображение
+    unsigned char* img = stbi_load(texture_path, &i_width, &i_height, &i_channels, 0);
+
+    // Создаем текстуру
+    GLuint texture;
+    glGenTextures(1, &texture);
+    // Указываем ее тип (привязываем)
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // Генерируем текстуру, то есть передаем наше загруженное изображение в генератор
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, i_width, i_height, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
+    // Генерируем так же mipmap к этой текстуре
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // Очистим память под изображение (оно нам больше не нужно), а также отвяжем текстуру
+    stbi_image_free(img);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
 
     // Инициализируем шейдеры
@@ -93,10 +113,15 @@ int main(void)
 
 
     GLfloat vertices[] = {
-        // Позиция              // Цвет
-        -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f
+        // Позиция              // Цвет                 // Координаты текстуры
+        0.5f, 0.5f, 0.0f,       1.0f, 0.0f, 0.0f,       1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f,      0.0f, 1.0f, 0.0f,       1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,       0.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f,      1.0f, 1.0f, 0.0f,       0.0f, 1.0f
+    };
+    GLuint indices[] = {
+        0, 1, 3,
+        1, 2, 3
     };
 
 
@@ -112,15 +137,26 @@ int main(void)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // III
-    // Так как теперь у нас помимо позиции появился цвет, указать нужно и его
-    // Сначала укажем позицию, увеличив шаг
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    // Теперь по аналогии укажем на цвет
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
+    // Создаем EBO/IBO (Element/Index Buffer Object)
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    // Привязываем к нему GL_ELEMENT_ARRAY_BUFFER (необходимый для EBO тип буфера)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // Передаем в EBO индексы (то есть порядок отрисовки элементов)
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // IV
+    // Сначала укажем позицию, увеличив шаг
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    // Теперь по аналогии укажем на цвет
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+    // То же самое для текстуры
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+
+    // V
     glBindVertexArray(0);
 
 
@@ -138,8 +174,12 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
+        // Привязываем текстуру, чтобы переписанный фрагментный шейдер ее обнаружил (в нем мы указали ее как uniform)
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // Отвязываем текстуру
+        glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
 
 
