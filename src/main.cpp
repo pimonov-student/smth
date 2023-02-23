@@ -1,8 +1,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <filesystem>
 #include <iostream>
 #include "render/shader.h"
+#include "texture/stb_image.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+
+// Пути к некоторым файлам
+GLchar* v_shader_path;
+GLchar* f_shader_path;
 
 // Функция "обратного вызова", которая отслеживает нажатие ESC и закрывает окно
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -13,12 +21,34 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+// Функция подгатавливает расположение файлов необходимых
+void work_on_paths(std::string wd)
+{
+    std::string v_shader = wd + "\\src\\shader\\vertex_shader.vs";
+    std::string f_shader = wd + "\\src\\shader\\fragment_shader.fs";
+
+    char* v_tmp = v_shader.data();
+    char* f_tmp = f_shader.data();
+
+    v_shader_path = new char[v_shader.length() + 1];
+    f_shader_path = new char[f_shader.length() + 1];
+
+    strcpy(v_shader_path, v_tmp);
+    strcpy(f_shader_path, f_tmp);
+}
+
 int main(void)
 {
+    // Работаем с путями к файлам путем избиения костылями
+    std::filesystem::path cwd = std::filesystem::current_path();
+    std::string wd = cwd.string();
+    wd.resize(wd.length() - 6);
+    work_on_paths(wd);
+
     // Инициализация и настройка GLFW
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     // "Установка профайла, для которого создается контекст"
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // Запрет на динамическое изменение окна
@@ -48,13 +78,18 @@ int main(void)
 
 
     // Передаем OpenGL размер window
-    int width, heigth;
-    glfwGetFramebufferSize(window, &width, &heigth);
-    glViewport(0, 0, width, heigth);
+    int w_width, w_heigth;
+    glfwGetFramebufferSize(window, &w_width, &w_heigth);
+    glViewport(0, 0, w_width, w_heigth);
+
+
+    // Работаем с текстурами
+    // Задаем размеры изображения и количество цветовых каналов
+    int i_width, i_heigth, i_channels;
 
 
     // Инициализируем шейдеры
-    Shader shader("D:/Git/smth/src/shader/vertex_shader.vs", "D:/Git/smth/src/shader/fragment_shader.fs");
+    Shader shader(v_shader_path, f_shader_path);
 
 
     GLfloat vertices[] = {
