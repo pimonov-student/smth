@@ -3,14 +3,16 @@
 
 #include <filesystem>
 #include <iostream>
-#include "render/shader.h"
+#include "shader/shader.h"
+#include "texture/texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "texture/stb_image.h"
 
 // Пути к некоторым файлам
 GLchar* v_shader_path;
 GLchar* f_shader_path;
-GLchar* texture_path;
+GLchar* wall_texture_path;
+GLchar* shrek_texture_path;
 
 // Функция "обратного вызова", которая отслеживает нажатие ESC и закрывает окно
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -26,19 +28,23 @@ void work_on_paths(std::string wd)
 {
     std::string v_shader = wd + "\\src\\shader\\vertex_shader.vs";
     std::string f_shader = wd + "\\src\\shader\\fragment_shader.fs";
-    std::string texture = wd + "\\src\\texture\\img\\wall.jpg";
+    std::string wall = wd + "\\src\\texture\\img\\wall.jpg";
+    std::string shrek = wd + "\\src\\texture\\img\\shrek.png";
 
     char* v_tmp = v_shader.data();
     char* f_tmp = f_shader.data();
-    char* t_tmp = texture.data();
+    char* wall_tmp = wall.data();
+    char* shrek_tmp = shrek.data();
 
     v_shader_path = new char[v_shader.length() + 1];
     f_shader_path = new char[f_shader.length() + 1];
-    texture_path = new char[texture.length() + 1];
+    wall_texture_path = new char[wall.length() + 1];
+    shrek_texture_path = new char[shrek.length() + 1];
 
     strcpy(v_shader_path, v_tmp);
     strcpy(f_shader_path, f_tmp);
-    strcpy(texture_path, t_tmp);
+    strcpy(wall_texture_path, wall_tmp);
+    strcpy(shrek_texture_path, shrek_tmp);
 }
 
 int main(void)
@@ -87,37 +93,16 @@ int main(void)
     glViewport(0, 0, w_width, w_heigth);
 
 
-    // Работаем с текстурами
-    // Задаем размеры изображения и количество цветовых каналов
-    int i_width, i_height, i_channels;
-    // Загружаем изображение
-    unsigned char* img = stbi_load(texture_path, &i_width, &i_height, &i_channels, 0);
-
-    // Создаем текстуру
-    GLuint texture;
-    glGenTextures(1, &texture);
-    // Указываем ее тип (привязываем)
-    glBindTexture(GL_TEXTURE_2D, texture);
-    // Генерируем текстуру, то есть передаем наше загруженное изображение в генератор
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, i_width, i_height, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
-    // Генерируем так же mipmap к этой текстуре
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // Очистим память под изображение (оно нам больше не нужно), а также отвяжем текстуру
-    stbi_image_free(img);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-
-    // Инициализируем шейдеры
+    // Создаем шейдеры (шейдерную программу)
     Shader shader(v_shader_path, f_shader_path);
 
 
     GLfloat vertices[] = {
         // Позиция              // Цвет                 // Координаты текстуры
-        0.5f, 0.5f, 0.0f,       1.0f, 0.0f, 0.0f,       1.0f, 1.0f,
-        0.5f, -0.5f, 0.0f,      0.0f, 1.0f, 0.0f,       1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,       0.0f, 0.0f,
-        -0.5f, 0.5f, 0.0f,      1.0f, 1.0f, 0.0f,       0.0f, 1.0f
+        0.5f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f,       1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f,      1.0f, 0.0f, 0.0f,       1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,       0.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f,      0.0f, 0.0f, 1.0f,       0.0f, 1.0f
     };
     GLuint indices[] = {
         0, 1, 3,
@@ -160,6 +145,13 @@ int main(void)
     glBindVertexArray(0);
 
 
+    // Устанавливаем флажок, без которого stb_image будет загружать изображения перевернутыми
+    stbi_set_flip_vertically_on_load(true);
+    // Создаем текстуры
+    Texture wall(wall_texture_path);
+    Texture shrek(shrek_texture_path);
+
+
     // Эта функция устанавливает режим отрисовки
     // Второй аргумент, например: GL_LINE - только линии, GL_FILL - заливка
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -169,16 +161,26 @@ int main(void)
     {
         glfwPollEvents();
 
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
+
+        // Сделаем активным текстурный блок 0 и закрепим за ним текстуру стены
+        glActiveTexture(GL_TEXTURE0);
         // Привязываем текстуру, чтобы переписанный фрагментный шейдер ее обнаружил (в нем мы указали ее как uniform)
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, wall.texture);
+        // Определяем uniform переменную
+        glUniform1i(glGetUniformLocation(shader.program, "texture_one"), 0);
+        // Делаем то же самое с шреком
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, shrek.texture);
+        glUniform1i(glGetUniformLocation(shader.program, "texture_two"), 1);
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        // Отвязываем текстуру
+
+        // Отвязываем текстуры
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
 
