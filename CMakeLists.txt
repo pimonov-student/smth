@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.25.2 FATAL_ERROR)
 
 set(PROJECT_NAME smth)
+set (CMAKE_CXX_STANDARD 17)
 project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME} 
 	src/main.cpp
-	src/render/shader.cpp
-	src/render/shader.h
+	src/shader/shader.cpp
+	src/shader/shader.h
+	src/texture/texture.cpp
+	src/texture/texture.h
 	src/texture/stb_image.h)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
