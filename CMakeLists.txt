@@ -6,7 +6,8 @@ project(${PROJECT_NAME})
 add_executable(${PROJECT_NAME} 
 	src/main.cpp
 	src/render/shader.cpp
-	src/render/shader.h)
+	src/render/shader.h
+	src/texture/stb_image.h)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
