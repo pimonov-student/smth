@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <filesystem>
 #include <iostream>
@@ -176,6 +179,17 @@ int main(void)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, shrek.texture);
         glUniform1i(glGetUniformLocation(shader.program, "texture_two"), 1);
+
+
+        // Трансформации (матрицы)
+        glm::mat4 trans(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (GLfloat)glfwGetTime() * 2.0f, glm::vec3(0.0, 0.0, 1.0));
+        trans = glm::scale(trans, glm::vec3(1.1, 1.1, 1.1));
+
+        // Делаем видимой матрицу трансформации
+        glUniformMatrix4fv(glGetUniformLocation(shader.program, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
