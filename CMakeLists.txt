@@ -23,5 +23,5 @@ target_link_libraries(${PROJECT_NAME} glfw)
 add_subdirectory(external/glad)
 target_link_libraries(${PROJECT_NAME} glad)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-SET(TARGET_H include/shader.h)
+add_subdirectory(external/glm)
+target_link_libraries(${PROJECT_NAME} glm)
