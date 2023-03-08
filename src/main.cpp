@@ -17,7 +17,6 @@ GLchar* f_shader_path;
 GLchar* wall_texture_path;
 GLchar* shrek_texture_path;
 
-// Функция "обратного вызова", которая отслеживает нажатие ESC и закрывает окно
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -91,21 +90,58 @@ int main(void)
 
 
     // Передаем OpenGL размер window
-    int w_width, w_heigth;
-    glfwGetFramebufferSize(window, &w_width, &w_heigth);
-    glViewport(0, 0, w_width, w_heigth);
+    int w_width, w_height;
+    glfwGetFramebufferSize(window, &w_width, &w_height);
+    glViewport(0, 0, w_width, w_height);
 
 
     // Создаем шейдеры (шейдерную программу)
     Shader shader(v_shader_path, f_shader_path);
 
 
+    // Координаты (в том числе текстурные) объекта кубик (локальные координаты относительно его центра)
     GLfloat vertices[] = {
-        // Позиция              // Цвет                 // Координаты текстуры
-        0.5f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f,       1.0f, 1.0f,
-        0.5f, -0.5f, 0.0f,      1.0f, 0.0f, 0.0f,       1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,       0.0f, 0.0f,
-        -0.5f, 0.5f, 0.0f,      0.0f, 0.0f, 1.0f,       0.0f, 1.0f
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
     GLuint indices[] = {
         0, 1, 3,
@@ -135,13 +171,10 @@ int main(void)
 
     // IV
     // Сначала укажем позицию, увеличив шаг
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
-    // Теперь по аналогии укажем на цвет
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
     // То же самое для текстуры
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
 
     // V
@@ -158,6 +191,8 @@ int main(void)
     // Эта функция устанавливает режим отрисовки
     // Второй аргумент, например: GL_LINE - только линии, GL_FILL - заливка
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // Включаем проверку Z-буфера (чтобы корректно работало перекрытие олних фрагментов другими)
+    glEnable(GL_DEPTH_TEST);
 
 
     while (!glfwWindowShouldClose(window))
@@ -165,9 +200,9 @@ int main(void)
         glfwPollEvents();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // Помимо очистки цветов изображения, будем очищать Z-буфер от значений предыдущего кадра
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
 
         // Сделаем активным текстурный блок 0 и закрепим за ним текстуру стены
         glActiveTexture(GL_TEXTURE0);
@@ -181,18 +216,34 @@ int main(void)
         glUniform1i(glGetUniformLocation(shader.program, "texture_two"), 1);
 
 
-        // Трансформации (матрицы)
-        glm::mat4 trans(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (GLfloat)glfwGetTime() * 2.0f, glm::vec3(0.0, 0.0, 1.0));
-        trans = glm::scale(trans, glm::vec3(1.1, 1.1, 1.1));
-
-        // Делаем видимой матрицу трансформации
-        glUniformMatrix4fv(glGetUniformLocation(shader.program, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+        shader.use();
 
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+        // Мы хотим чтоб текстура "покоилась на полу" и мы на нее сверху под углом будем "смотреть" при этом как бы "отойдя" назад
+        // Начинаем с матрицы модели, которая переведет локальные координаты в мировые, по сути повернет текстуру вдоль оси Х (теперь она лежит на полу)
+        glm::mat4 model(1.0f);
+        model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(1.0f, 1.0f, 0.0f));
+        // Следующая матрица вида, которая "отодвинет" наблюдателя, на самом деле "пододвинет" все мировые координаты вперед от нас (теперь мы отошли назад)
+        glm::mat4 view(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        // Последняя матрица проекции, она преобразует все координаты в соответствии с перспективой (теперь выглядит реалистичнее)
+        glm::mat4 projection(1.0f);
+        projection = glm::perspective(glm::radians(45.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 100.0f);
+
+        // Определяем наши матрицы как uniform переменные для вершинного шейдера
+        GLint model_loc = glGetUniformLocation(shader.program, "model");
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
+        GLint view_loc = glGetUniformLocation(shader.program, "view");
+        glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
+        GLint projection_loc = glGetUniformLocation(shader.program, "projection");
+        glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
+
+
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Отвязываем текстуры
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -205,6 +256,7 @@ int main(void)
     // Очищаем выделенную под эти объекты память
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     // После завершения цикла, закрывавем окно
     glfwTerminate();
 
