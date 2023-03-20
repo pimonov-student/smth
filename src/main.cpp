@@ -143,9 +143,19 @@ int main(void)
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
-    GLuint indices[] = {
-        0, 1, 3,
-        1, 2, 3
+    // Используем один объект кубик и отрисуем таких 10 штук
+    // Для этого в основном цикле в model матрицы передадим вот эти вектора
+    glm::vec3 cubes_coords[] = {
+        glm::vec3(0.0f,  0.0f,  0.0f),
+        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f,  2.0f, -2.5f),
+        glm::vec3(1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
 
@@ -161,15 +171,6 @@ int main(void)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // III
-    // Создаем EBO/IBO (Element/Index Buffer Object)
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    // Привязываем к нему GL_ELEMENT_ARRAY_BUFFER (необходимый для EBO тип буфера)
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // Передаем в EBO индексы (то есть порядок отрисовки элементов)
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // IV
     // Сначала укажем позицию, увеличив шаг
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
@@ -177,7 +178,7 @@ int main(void)
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
 
-    // V
+    // IV
     glBindVertexArray(0);
 
 
@@ -221,29 +222,27 @@ int main(void)
 
         glBindVertexArray(VAO);
 
+        // Матрицы
+        for (GLint i = 0; i < 10; ++i)
+        {
+            glm::mat4 model(1.0f);
+            model = glm::translate(model, cubes_coords[i]);
+            model = glm::rotate(model, (GLfloat)glfwGetTime() * i, glm::vec3(1.0f, 1.0f, 0.0f));
+            GLint model_loc = glGetUniformLocation(shader.program, "model");
+            glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
 
-        // Начинаем с матрицы модели, которая переведет локальные координаты в мировые
-        glm::mat4 model(1.0f);
-        model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
-        // Следующая матрица вида, которая "отодвинет" наблюдателя, на самом деле "пододвинет" все мировые координаты вперед от нас
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         glm::mat4 view(1.0f);
-        view = glm::rotate(view, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(sin(glfwGetTime()), -1.5f, -4.0f + cos(glfwGetTime())));
-        // Последняя матрица проекции, она преобразует все координаты в соответствии с перспективой (теперь выглядит реалистичнее)
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         glm::mat4 projection(1.0f);
-        projection = glm::perspective(glm::radians(60.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(50.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 100.0f);
 
         // Определяем наши матрицы как uniform переменные для вершинного шейдера
-        GLint model_loc = glGetUniformLocation(shader.program, "model");
-        glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
         GLint view_loc = glGetUniformLocation(shader.program, "view");
         glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
         GLint projection_loc = glGetUniformLocation(shader.program, "projection");
         glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
-
-
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Отвязываем текстуры
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -256,7 +255,6 @@ int main(void)
     // Очищаем выделенную под эти объекты память
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
     // После завершения цикла, закрывавем окно
     glfwTerminate();
 
