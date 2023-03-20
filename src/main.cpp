@@ -17,11 +17,61 @@ GLchar* f_shader_path;
 GLchar* wall_texture_path;
 GLchar* shrek_texture_path;
 
+// Переменные для камеры
+glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// Состояние клавиш
+bool keys[1024];
+
+// Реакция на нажатия
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
+    // Фиксируем нажатия
+    if (action == GLFW_PRESS)
+    {
+        keys[key] = true;
+    }
+    if (action == GLFW_RELEASE)
+    {
+        keys[key] = false;
+    }
+    // Закрываем окно
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+}
+
+// Движение камеры
+void check_keys()
+{
+    // Управление камерой
+    GLfloat camera_step = 0.05f;
+    if (keys[GLFW_KEY_W])
+    {
+        camera_pos += camera_step * camera_front;
+    }
+    if (keys[GLFW_KEY_S])
+    {
+        camera_pos -= camera_step * camera_front;
+    }
+    if (keys[GLFW_KEY_D])
+    {
+        camera_pos += camera_step * glm::normalize(glm::cross(camera_front, camera_up));
+    }
+    if (keys[GLFW_KEY_A])
+    {
+        camera_pos -= camera_step * glm::normalize(glm::cross(camera_front, camera_up));
+    }
+    if (keys[GLFW_KEY_Q])
+    {
+        camera_pos += camera_step * camera_up;
+    }
+    if (keys[GLFW_KEY_E])
+    {
+        camera_pos -= camera_step * camera_up;
     }
 }
 
@@ -199,6 +249,8 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        // Движение камеры
+        check_keys();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         // Помимо очистки цветов изображения, будем очищать Z-буфер от значений предыдущего кадра
@@ -233,10 +285,12 @@ int main(void)
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+        // По сути матрица view есть матрица "вида из камеры", зададим ее через функцию glm::lookAt
         glm::mat4 view(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        // Первый аргумент - вектор на камеру, второй - вектор на точку, куда камера смотрит, третий - вспомогательный вектор для создания системы координат
+        view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
         glm::mat4 projection(1.0f);
-        projection = glm::perspective(glm::radians(50.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(50.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 300.0f);
 
         // Определяем наши матрицы как uniform переменные для вершинного шейдера
         GLint view_loc = glGetUniformLocation(shader.program, "view");
