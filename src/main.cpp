@@ -222,16 +222,16 @@ int main(void)
         glBindVertexArray(VAO);
 
 
-        // Мы хотим чтоб текстура "покоилась на полу" и мы на нее сверху под углом будем "смотреть" при этом как бы "отойдя" назад
-        // Начинаем с матрицы модели, которая переведет локальные координаты в мировые, по сути повернет текстуру вдоль оси Х (теперь она лежит на полу)
+        // Начинаем с матрицы модели, которая переведет локальные координаты в мировые
         glm::mat4 model(1.0f);
-        model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(1.0f, 1.0f, 0.0f));
-        // Следующая матрица вида, которая "отодвинет" наблюдателя, на самом деле "пододвинет" все мировые координаты вперед от нас (теперь мы отошли назад)
+        model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        // Следующая матрица вида, которая "отодвинет" наблюдателя, на самом деле "пододвинет" все мировые координаты вперед от нас
         glm::mat4 view(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::rotate(view, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(sin(glfwGetTime()), -1.5f, -4.0f + cos(glfwGetTime())));
         // Последняя матрица проекции, она преобразует все координаты в соответствии с перспективой (теперь выглядит реалистичнее)
         glm::mat4 projection(1.0f);
-        projection = glm::perspective(glm::radians(45.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(60.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 100.0f);
 
         // Определяем наши матрицы как uniform переменные для вершинного шейдера
         GLint model_loc = glGetUniformLocation(shader.program, "model");
